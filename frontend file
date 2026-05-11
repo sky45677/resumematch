@@ -1,0 +1,598 @@
+frontend/index.html
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ResumeMatch AI</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-50 min-h-screen flex">
+    <div class="w-full max-w-4xl mx-auto p-4">
+        <!-- Header -->
+        <header class="mb-8">
+            <h1 class="text-3xl font-bold text-center text-gray-800 mb-4">ResumeMatch AI</h1>
+            <p class="text-center text-gray-600">Real-Time Resume Screener & Job Matcher</p>
+        </header>
+
+        <!-- Tabs -->
+        <div class="mb-6 flex border-b border-gray-200">
+            <button id="analyze-tab" class="px-4 py-2 text-sm font-medium text-gray-600 hover:text-gray-900 border-b-2 border-transparent focus:outline-focus" aria-selected="true">
+                Analyze Match
+            </button>
+            <button id="history-tab" class="px-4 py-2 text-sm font-medium text-gray-500 hover:text-gray-600 border-b-2 border-transparent focus:outline-focus" aria-selected="false">
+                History
+            </button>
+        </div>
+
+        <!-- Analyze Tab Content -->
+        <div id="analyze-content" class="space-y-6">
+            <!-- Login/Register Section -->
+            <div id="auth-section" class="bg-white rounded-lg shadow p-6">
+                <div class="space-y-4" id="login-form">
+                    <h2 class="text-xl font-semibold text-gray-800">Login to Continue</h2>
+                    <form id="login-form-inner" class="space-y-4">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Username</label>
+                            <input type="text" id="login-username" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500" required>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Password</label>
+                            <input type="password" id="login-password" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500" required>
+                        </div>
+                        <button type="submit" id="login-btn" class="w-full bg-indigo-600 text-white py-2 px-4 rounded-md hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-800 focus:ring-offset-2">
+                            Login
+                        </button>
+                    </form>
+                    <p class="text-center text-sm text-gray-500">
+                        Don't have an account? <span id="show-register" class="text-indigo-600 cursor-hover underline">Register</span>
+                    </p>
+                </div>
+
+                <div class="space-y-4 hidden" id="register-form">
+                    <h2 class="text-xl font-semibold text-gray-800">Create Account</h2>
+                    <form id="register-form-inner" class="space-y-4">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Username</label>
+                            <input type="text" id="register-username" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500" required>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Email</label>
+                            <input type="email" id="register-email" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500" required>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Password</label>
+                            <input type="password" id="register-password" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500" required>
+                        </div>
+                        <button type="submit" id="register-btn" class="w-full bg-indigo-600 text-white py-2 px-4 rounded-md hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-800 focus:ring-offset-2">
+                            Register
+                        </button>
+                    </form>
+                    <p class="text-center text-sm text-gray-500">
+                        Already have an account? <span id="show-login" class="text-indigo-600 cursor-hover underline">Login</span>
+                    </p>
+                </div>
+            </div>
+
+            <!-- Main Analyzer (hidden until logged in) -->
+            <div id="analyzer-section" class="hidden">
+                <div class="bg-white rounded-lg shadow p-6">
+                    <h2 class="text-xl font-semibold text-gray-800 mb-4">Analyze Your Resume</h2>
+                    
+                    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                        <!-- Job Description -->
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Job Description</label>
+                            <textarea id="job-description" rows="8" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500" placeholder="Paste the job description here..."></textarea>
+                        </div>
+                        
+                        <!-- Resume Upload -->
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Upload Resume (PDF or DOCX)</label>
+                            <div id="drop-zone" class="border-2 border-dashed border-gray-300 rounded-md p-6 text-center hover:border-indigo-500 hover:bg-indigo-50 transition-colors cursor-pointer">
+                                <div class="space-y-3">
+                                    <p class="text-indigo-600 font-medium">Drag & drop your resume here</p>
+                                    <p class="text-sm text-gray-500">or</p>
+                                    <label for="resume-upload" class="bg-indigo-600 text-white px-4 py-2 rounded-md cursor-pointer">
+                                        Browse Files
+                                    </label>
+                                    <input type="file" id="resume-upload" accept=".pdf,.docx" class="hidden">
+                                </div>
+                                <p id="file-name" class="mt-2 text-sm text-gray-600"></p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="text-center mt-6">
+                        <button id="analyze-btn" class="bg-gradient-to-r from-indigo-500 to-purple-600 text-white py-3 px-8 rounded-md hover:from-indigo-600 hover:to-purple-700 focus:outline-none focus:ring-2 focus-ring-offset-2 focus-ring-indigo-500 disabled:opacity-50 disabled:cursor-not-allowed">
+                            Analyze Match
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Results Section (hidden until analysis complete) -->
+            <div id="results-section" class="hidden space-y-6">
+                <!-- Score Card -->
+                <div class="bg-white rounded-lg shadow p-6">
+                    <div class="flex items-center justify-between mb-4">
+                        <h2 class="text-xl font-semibold text-gray-800">Match Analysis</h2>
+                        <span id="match-label" class="px-3 py-1 rounded-full text-sm font-medium"></span>
+                    </div>
+                    
+                    <!-- Animated Score Circle -->
+                    <div class="flex items-center space-x-6">
+                        <div class="w-20 h-20 relative">
+                            <svg class="w-full h-full" viewBox="0 0 36 36">
+                                <path class="stroke-gray-200" d="M18 2.084a15.916 15.916 0 010 31.831" />
+                                <path id="score-circle" class="stroke-indigo-500 stroke-linecap-round" d="M18 2.084a15.916 15.916 0 010 31.831" stroke-dasharray="0, 100" />
+                            </svg>
+                            <div class="absolute inset-0 flex items-center justify-center">
+                                <div class="text-2xl font-bold" id="score-value">0</div>
+                                <div class="text-xs text-gray-500">%</div>
+                            </div>
+                        </div>
+                        <div class="text-left">
+                            <h3 class="text-lg font-medium text-gray-800">Match Score</h3>
+                            <p class="text-sm text-gray-500">Based on semantic similarity with job description</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Missing Keywords -->
+                <div class="bg-white rounded-lg shadow p-6">
+                    <h2 class="text-xl font-semibold text-gray-800 mb-4">Missing Keywords</h2>
+                    <div id="missing-keywords" class="flex flex-wrap gap-2"></div>
+                </div>
+
+                <!-- Suggestions -->
+                <div class="bg-white rounded-lg shadow p-6">
+                    <h2 class="text-xl font-semibold text-gray-800 mb-4">Improvement Suggestions</h2>
+                    <ul id="suggestions-list" class="space-y-2 pl-5 list-disc"></ul>
+                </div>
+
+                <!-- Rewrite Button -->
+                <div class="bg-white rounded-lg shadow p-6">
+                    <h2 class="text-xl font-semibold text-gray-800 mb-4">AI Resume Rewriter</h2>
+                    <button id="rewrite-btn" class="w-full bg-gradient-to-r from-purple-500 to-pink-500 text-white py-3 px-4 rounded-md hover:from-purple-600 hover:to-pink-600 focus:outline-none focus:ring-2 focus-ring-offset-2 focus-ring-purple-500 disabled:opacity-50 disabled:cursor-not-allowed">
+                        ✨ Rewrite My Resume for This Job
+                    </button>
+                </div>
+            </div>
+
+            <!-- Rewrite Modal (hidden by default) -->
+            <div id="rewrite-modal" class="fixed inset-0 bg-black bg-opacity-50 hidden flex items-center justify-center z-50">
+                <div class="bg-white rounded-lg shadow-xl w-full max-w-2xl p-6">
+                    <div class="flex justify-between items-start">
+                        <h2 class="text-xl font-semibold text-gray-800">Rewritten Resume</h2>
+                        <button id="close-modal" class="text-gray-400 hover:text-gray-600">
+                            <svg class="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+                        </button>
+                    </div>
+                    <div class="mt-4">
+                        <textarea id="rewritten-resume" rows="15" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus-ring-indigo-500" readonly></textarea>
+                    </div>
+                    <div class="mt-4 flex justify-end">
+                        <button id="copy-btn" class="bg-indigo-600 text-white px-4 py-2 rounded-md hover:bg-indigo-700 focus:outline-none focus:ring-2 focus-ring-offset-2 focus-ring-indigo-800">
+                            Copy to Clipboard
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- History Tab Content -->
+        <div id="history-content" class="hidden space-y-4">
+            <div class="bg-white rounded-lg shadow p-6">
+                <h2 class="text-xl font-semibold text-gray-800 mb-4">Scan History</h2>
+                <div id="history-table-container" class="overflow-x-auto">
+                    <table class="min-w-full divide-y divide-gray-200">
+                        <thead class="bg-gray-50">
+                            <tr>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Resume</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Job Title</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Score</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Date</th>
+                            </tr>
+                        </thead>
+                        <tbody id="history-table-body" class="bg-white divide-y divide-gray-200">
+                            <!-- Rows will be inserted here -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Initialize state
+        let currentUser = null;
+        let currentScanId = null;
+        let currentTaskId = null;
+        let pollInterval = null;
+
+        // DOM Elements
+        const authSection = document.getElementById('auth-section');
+        const analyzerSection = document.getElementById('analyzer-section');
+        const resultsSection = document.getElementById('results-section');
+        const historyContent = document.getElementById('history-content');
+        const analyzeTab = document.getElementById('analyze-tab');
+        const historyTab = document.getElementById('history-tab');
+        const analyzeContent = document.getElementById('analyze-content');
+        
+        // Login/Register Forms
+        const loginForm = document.getElementById('login-form-inner');
+        const registerForm = document.getElementById('register-form-inner');
+        const showRegister = document.getElementById('show-register');
+        const showLogin = document.getElementById('show-login');
+        
+        // Analyzer Elements
+        const jobDescription = document.getElementById('job-description');
+        const dropZone = document.getElementById('drop-zone');
+        const resumeUpload = document.getElementById('resume-upload');
+        const fileNameDisplay = document.getElementById('file-name');
+        const analyzeBtn = document.getElementById('analyze-btn');
+        
+        // Results Elements
+        const matchLabel = document.getElementById('match-label');
+        const scoreValue = document.getElementById('score-value');
+        const scoreCircle = document.getElementById('score-circle');
+        const missingKeywords = document.getElementById('missing-keywords');
+        const suggestionsList = document.getElementById('suggestions-list');
+        const rewriteBtn = document.getElementById('rewrite-btn');
+        
+        // Modal Elements
+        const rewriteModal = document.getElementById('rewrite-modal');
+        const rewrittenResume = document.getElementById('rewritten-resume');
+        const closeModal = document.getElementById('close-modal');
+        const copyBtn = document.getElementById('copy-btn');
+        
+        // History Elements
+        const historyTableBody = document.getElementById('history-table-body');
+        
+        // Initialize
+        initEventListeners();
+        
+        function initEventListeners() {
+            // Tab switching
+            analyzeTab.addEventListener('click', () => {
+                analyzeTab.classList.add('text-gray-900', 'border-indigo-500');
+                analyzeTab.classList.remove('text-gray-500', 'border-transparent');
+                historyTab.classList.remove('text-gray-900', 'border-indigo-500');
+                historyTab.classList.add('text-gray-500', 'border-transparent');
+                analyzeContent.classList.remove('hidden');
+                historyContent.classList.add('hidden');
+            });
+            
+            historyTab.addEventListener('click', () => {
+                historyTab.classList.add('text-gray-900', 'border-indigo-500');
+                historyTab.classList.remove('text-gray-500', 'border-transparent');
+                analyzeTab.classList.remove('text-gray-900', 'border-indigo-500');
+                analyzeTab.classList.add('text-gray-500', 'border-transparent');
+                historyContent.classList.remove('hidden');
+                analyzeContent.classList.add('hidden');
+                if (currentUser) loadHistory();
+            });
+            
+            // Auth toggles
+            showRegister.addEventListener('click', (e) => {
+                e.preventDefault();
+                document.getElementById('login-form').classList.add('hidden');
+                document.getElementById('register-form').classList.remove('hidden');
+            });
+            
+            showLogin.addEventListener('click', (e) => {
+                e.preventDefault();
+                document.getElementById('login-form').classList.remove('hidden');
+                document.getElementById('register-form').classList.add('hidden');
+            });
+            
+            // Login form
+            loginForm.addEventListener('submit', async (e) => {
+                e.preventDefault();
+                const username = document.getElementById('login-username').value;
+                const password = document.getElementById('login-password').value;
+                
+                try {
+                    const response = await fetch('/api/auth/login/', {
+                        method: 'POST',
+                        headers: {'Content-Type': 'application/json'},
+                        body: JSON.stringify({username, password})
+                    });
+                    
+                    if (response.ok) {
+                        currentUser = username;
+                        updateUIForLogin();
+                        document.getElementById('login-password').value = '';
+                    } else {
+                        const data = await response.json();
+                        alert(data.error || 'Login failed');
+                    }
+                } catch (error) {
+                    alert('Network error');
+                }
+            });
+            
+            // Register form
+            registerForm.addEventListener('submit', async (e) => {
+                e.preventDefault();
+                const username = document.getElementById('register-username').value;
+                const email = document.getElementById('register-email').value;
+                const password = document.getElementById('register-password').value;
+                
+                try {
+                    const response = await fetch('/api/auth/register/', {
+                        method: 'POST',
+                        headers: {'Content-Type': 'application/json'},
+                        body: JSON.stringify({username, email, password})
+                    });
+                    
+                    if (response.ok) {
+                        alert('Registration successful! Please login.');
+                        document.getElementById('register-form').classList.add('hidden');
+                        document.getElementById('login-form').classList.remove('hidden');
+                        registerForm.reset();
+                    } else {
+                        const data = await response.json();
+                        alert(data.error || 'Registration failed');
+                    }
+                } catch (error) {
+                    alert('Network error');
+                }
+            });
+            
+            // File upload
+            dropZone.addEventListener('click', () => resumeUpload.click());
+            
+            resumeUpload.addEventListener('change', (e) => {
+                if (e.target.files[0]) {
+                    fileNameDisplay.textContent = e.target.files[0].name;
+                    fileNameDisplay.classList.remove('hidden');
+                }
+            });
+            
+            dropZone.addEventListener('dragover', (e) => {
+                e.preventDefault();
+                dropZone.classList.add('border-indigo-500', 'bg-indigo-50');
+            });
+            
+            dropZone.addEventListener('dragleave', (e) => {
+                e.preventDefault();
+                dropZone.classList.remove('border-indigo-500', 'bg-indigo-50');
+            });
+            
+            dropZone.addEventListener('drop', (e) => {
+                e.preventDefault();
+                dropZone.classList.remove('border-indigo-500', 'bg-indigo-50');
+                if (e.dataTransfer.files[0]) {
+                    resumeUpload.files = e.dataTransfer.files;
+                    fileNameDisplay.textContent = e.dataTransfer.files[0].name;
+                    fileNameDisplay.classList.remove('hidden');
+                }
+            });
+            
+            // Analyze button
+            analyzeBtn.addEventListener('click', analyzeResume);
+            
+            // Rewrite button
+            rewriteBtn.addEventListener('click', initiateRewrite);
+            
+            // Modal controls
+            closeModal.addEventListener('click', () => {
+                rewriteModal.classList.add('hidden');
+            });
+            
+            copyBtn.addEventListener('click', async () => {
+                try {
+                    await navigator.clipboard.writeText(rewrittenResume.value);
+                    copyBtn.textContent = 'Copied!';
+                    setTimeout(() => copyBtn.textContent = 'Copy to Clipboard', 2000);
+                } catch (err) {
+                    alert('Failed to copy text');
+                }
+            });
+        }
+        
+        async function analyzeResume() {
+            const jobDesc = jobDescription.value.trim();
+            if (!jobDesc) {
+                alert('Please enter a job description');
+                return;
+            }
+            
+            if (!resumeUpload.files[0]) {
+                alert('Please upload a resume');
+                return;
+            }
+            
+            const file = resumeUpload.files[0];
+            if (!file.name.match(/\.(pdf|docx)$/i)) {
+                alert('Please upload a PDF or DOCX file');
+                return;
+            }
+            
+            // Disable UI during processing
+            analyzeBtn.disabled = true;
+            analyzeBtn.textContent = 'Analyzing...';
+            
+            const formData = new FormData();
+            formData.append('resume', file);
+            formData.append('job_description', jobDesc);
+            
+            try {
+                const response = await fetch('/api/scan/', {
+                    method: 'POST',
+                    body: formData,
+                    credentials: 'include'
+                });
+                
+                if (!response.ok) {
+                    const errorData = await response.json();
+                    throw new Error(errorData.error || 'Analysis failed');
+                }
+                
+                const data = await response.json();
+                currentScanId = data.scan_id;
+                displayResults(data);
+                
+                // Show results section
+                resultsSection.classList.remove('hidden');
+                analyzerSection.classList.add('hidden');
+                
+            } catch (error) {
+                alert(error.message);
+            } finally {
+                analyzeBtn.disabled = false;
+                analyzeBtn.textContent = 'Analyze Match';
+            }
+        }
+        
+        function displayResults(data) {
+            // Update match label and score
+            const score = data.score;
+            scoreValue.textContent = score;
+            
+            // Update score circle animation
+            const circumference = 2 * Math.PI * 15.916; // radius 15.916
+            const offset = circumference - (score / 100) * circumference;
+            scoreCircle.style.strokeDashoffset = offset;
+            
+            // Update match label
+            matchLabel.textContent = data.match_label;
+            matchLabel.className = 'px-3 py-1 rounded-full text-sm font-medium';
+            if (score >= 80) {
+                matchLabel.classList.add('bg-green-100', 'text-green-800');
+            } else if (score >= 50) {
+                matchLabel.classList.add('bg-yellow-100', 'text-yellow-800');
+            } else {
+                matchLabel.classList.add('bg-red-100', 'text-red-800');
+            }
+            
+            // Display missing keywords
+            missingKeywords.innerHTML = '';
+            data.missing_keywords.forEach(keyword => {
+                const badge = document.createElement('span');
+                badge.className = 'bg-red-100 text-red-800 text-xs px-2 py-1 rounded-full';
+                badge.textContent = keyword;
+                missingKeywords.appendChild(badge);
+            });
+            
+            // Display suggestions
+            suggestionsList.innerHTML = '';
+            data.suggestions.forEach(suggestion => {
+                const li = document.createElement('li');
+                li.textContent = suggestion;
+                suggestionsList.appendChild(li);
+            });
+        }
+        
+        async function initiateRewrite() {
+            if (!currentScanId) {
+                alert('No scan data available');
+                return;
+            }
+            
+            rewriteBtn.disabled = true;
+            rewriteBtn.textContent = 'Rewriting...';
+            
+            try {
+                const response = await fetch('/api/rewrite/', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({scan_id: currentScanId}),
+                    credentials: 'include'
+                });
+                
+                if (!response.ok) {
+                    const errorData = await response.json();
+                    throw new Error(errorData.error || 'Rewrite failed');
+                }
+                
+                const data = await response.json();
+                currentTaskId = data.task_id;
+                startPolling();
+                
+            } catch (error) {
+                alert(error.message);
+            } finally {
+                rewriteBtn.disabled = false;
+                rewriteBtn.textContent = '✨ Rewrite My Resume for This Job';
+            }
+        }
+        
+        function startPolling() {
+            clearInterval(pollInterval);
+            pollInterval = setInterval(checkRewriteStatus, 3000);
+        }
+        
+        async function checkRewriteStatus() {
+            if (!currentTaskId) return;
+            
+            try {
+                const response = await fetch(`/api/rewrite-status/${currentTaskId}/`, {
+                    credentials: 'include'
+                });
+                
+                if (!response.ok) throw new Error('Failed to check status');
+                
+                const data = await response.json();
+                
+                if (data.status === 'done') {
+                    clearInterval(pollInterval);
+                    rewrittenResume.value = data.result;
+                    rewriteModal.classList.remove('hidden');
+                } else if (data.status === 'failed') {
+                    clearInterval(pollInterval);
+                    alert(data.error || 'Rewrite failed');
+                }
+                // If pending, continue polling
+            } catch (error) {
+                clearInterval(pollInterval);
+                alert('Error checking rewrite status');
+            }
+        }
+        
+        async function loadHistory() {
+            try {
+                const response = await fetch('/api/history/', {
+                    credentials: 'include'
+                });
+                
+                if (!response.ok) throw new Error('Failed to load history');
+                
+                const data = await response.json();
+                historyTableBody.innerHTML = '';
+                
+                data.forEach(scan => {
+                    const tr = document.createElement('tr');
+                    tr.innerHTML = `
+                        <td class="px-6 py-4 whitespace-nowrap">${scan.resume_filename}</td>
+                        <td class="px-6 py-4 whitespace-nowrap">${scan.job_title}</td>
+                        <td class="px-6 py-4 whitespace-nowrap">${scan.match_score}%</td>
+                        <td class="px-6 py-4 whitespace-nowrap">${new Date(scan.created_at).toLocaleDateString()}</td>
+                    `;
+                    historyTableBody.appendChild(tr);
+                });
+            } catch (error) {
+                alert('Failed to load history');
+            }
+        }
+        
+        function updateUIForLogin() {
+            // Hide auth section, show analyzer
+            authSection.classList.add('hidden');
+            analyzerSection.classList.remove('hidden');
+            resultsSection.classList.add('hidden');
+            
+            // Clear forms
+            loginForm.reset();
+            registerForm.reset();
+            document.getElementById('login-form').classList.remove('hidden');
+            document.getElementById('register-form').classList.add('hidden');
+        }
+        
+        // Check if user is already logged in (optional enhancement)
+        // In a real app, you'd check session status here
+    </script>
+</body>
+</html>
