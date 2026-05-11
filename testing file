@@ -1,0 +1,35 @@
+# Clone the repository
+git clone https://github.com/yourusername/resumematch-ai.git
+cd resumematch-ai
+
+# Create virtual environment
+python -m venv venv
+source venv/bin/activate  # On Windows: venv\Scripts\activate
+
+# Install dependencies
+pip install -r backend/requirements.txt
+
+# Setup environment
+cp backend/.env.example backend/.env
+# Edit .env with your local PostgreSQL credentials and Hugging Face token
+
+# Setup database
+createdb resumematch
+cd backend
+python manage.py makemigrations
+python manage.py migrate
+
+# Create superuser (optional)
+python manage.py createsuperuser
+
+# Start services (in separate terminals)
+# Terminal 1: Redis
+redis-server
+
+# Terminal 2: Celery worker
+celery -A resumematch worker --loglevel=info
+
+# Terminal 3: Django server
+python manage.py runserver
+
+# Visit: http://localhost:8000
